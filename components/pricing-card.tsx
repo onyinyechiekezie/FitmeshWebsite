@@ -288,7 +288,7 @@ export function PricingCard({ plan }: PricingCardProps) {
 
           <div className="mt-4">
           <span className="text-4xl font-bold text-foreground">
-            ${plan.price}
+            ₦{plan.price.toLocaleString("en-NG")}
           </span>
             <span className="text-muted-foreground">
             /{plan.period}

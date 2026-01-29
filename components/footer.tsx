@@ -37,7 +37,7 @@ export function Footer() {
             <h4 className="text-sm font-semibold text-foreground">Contact</h4>
             <ul className="mt-3 space-y-2">
               <li className="text-sm text-muted-foreground">123 Fitness Avenue</li>
-              <li className="text-sm text-muted-foreground">New York, NY 10001</li>
+              <li className="text-sm text-muted-foreground">Lagos Nigeria, Ago 10001</li>
               <li className="text-sm text-muted-foreground">info@fitmesh.com</li>
             </ul>
           </div>

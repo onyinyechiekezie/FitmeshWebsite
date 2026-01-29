@@ -114,47 +114,167 @@
 //   }
 // }
 
-import { prisma } from "@/lib/db";
-import { pwaRequest } from "@/lib/onepipe";
+
+
+// import { prisma } from "@/lib/db";
+// import { pwaRequest } from "@/lib/onepipe";
+// import { NextResponse } from "next/server";
+//
+// export async function POST(req: Request) {
+//     try {
+//         const body = await req.json();
+//         const { userId, amount, type, planId } = body;
+//
+//         const reference = `FITMESH_${Date.now()}`;
+//
+//         const payment = await prisma.payment.create({
+//             data: {
+//                 userId,
+//                 amount,
+//                 type,
+//                 planId,
+//                 reference,
+//                 status: "PENDING",
+//             },
+//         });
+//
+//         const onepipeResponse = await pwaRequest({
+//             amount,
+//             reference,
+//             currency: "NGN",
+//             customer_id: userId,
+//         });
+//
+//         return NextResponse.json({
+//             paymentId: payment.id,
+//             reference,
+//             onepipe: onepipeResponse,
+//         });
+//
+//     } catch (error: any) {
+//         console.error("Payment initiation error:", error.message);
+//
+//         return NextResponse.json(
+//             { error: error.message },
+//             { status: 400 }
+//         );
+//     }
+// }
+
+
+// import { NextResponse } from "next/server";
+// import { pwaRequest } from "@/lib/onepipe";
+// import { getSession } from "@/lib/auth";
+//
+// export async function POST(req: Request) {
+//     const session = await getSession();
+//
+//     if (!session) {
+//         return NextResponse.json(
+//             { message: "Unauthorized" },
+//             { status: 401 }
+//         );
+//     }
+//
+//     const body = await req.json();
+//
+//     const reference = `FITMESH-${Date.now()}`;
+//
+//     const payload = {
+//         reference,
+//         amount: body.amount,
+//         currency: "NGN",
+//         narration: "FitMesh Subscription",
+//         customer: {
+//             email: session.email,
+//             name: session.name,
+//         },
+//         billerCode: process.env.ONEPIPE_BILLER_CODE,
+//     };
+//
+//     try {
+//         const response = await pwaRequest(payload);
+//
+//         return NextResponse.json({
+//             success: true,
+//             reference,
+//             response,
+//         });
+//     } catch (err: any) {
+//         return NextResponse.json(
+//             { success: false, message: err.message },
+//             { status: 500 }
+//         );
+//     }
+// }
+
+
 import { NextResponse } from "next/server";
+import { pwaRequest } from "@/lib/onepipe";
+import { getSession } from "@/lib/auth";
 
 export async function POST(req: Request) {
-    try {
-        const body = await req.json();
-        const { userId, amount, type, planId } = body;
+    const session = await getSession();
 
-        const reference = `FITMESH_${Date.now()}`;
+    if (!session) {
+        return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
 
-        const payment = await prisma.payment.create({
-            data: {
-                userId,
-                amount,
-                type,
-                planId,
-                reference,
-                status: "PENDING",
+    const body = await req.json();
+
+    const requestRef = `REQ-${Date.now()}`;
+    const transactionRef = `TX-${Date.now()}`;
+
+    const payload = {
+        request_ref: requestRef,
+        request_type: "send invoice",
+
+        auth: {
+            type: null,
+            secure: null,
+            auth_provider: "PaywithAccount",
+        },
+
+        transaction: {
+            mock_mode: "Inspect", // 👈 CHANGE TO "Live" LATER
+            transaction_ref: transactionRef,
+            transaction_desc: "FitMesh Subscription Payment",
+            transaction_ref_parent: null,
+
+            amount: body.amount,
+
+            customer: {
+                customer_ref: session.id,
+                firstname: session.name?.split(" ")[0] ?? "User",
+                surname: session.name?.split(" ")[1] ?? "FitMesh",
+                email: session.email,
+                mobile_no: "08000000000", // mock-safe number
             },
-        });
 
-        const onepipeResponse = await pwaRequest({
-            amount,
-            reference,
-            currency: "NGN",
-            customer_id: userId,
-        });
+            meta: {
+                type: "single_payment",
+                expires_in: 30,
+                skip_messaging: false,
+                biller_code: process.env.ONEPIPE_BILLER_CODE,
+            },
+
+            details: {},
+        },
+    };
+
+    try {
+        const response = await pwaRequest(payload);
 
         return NextResponse.json({
-            paymentId: payment.id,
-            reference,
-            onepipe: onepipeResponse,
+            success: true,
+            requestRef,
+            transactionRef,
+            response,
         });
-
-    } catch (error: any) {
-        console.error("Payment initiation error:", error.message);
-
+    } catch (err: any) {
         return NextResponse.json(
-            { error: error.message },
-            { status: 400 }
+            { success: false, message: err.message },
+            { status: 500 }
         );
     }
 }
