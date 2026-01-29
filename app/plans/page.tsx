@@ -188,7 +188,7 @@ const plans: Plan[] = [
   {
     id: "daily",
     name: "Daily Pass",
-    price: 15,
+    price: 1,
     period: "day",
     description: "Perfect for trying out our facilities",
     icon: "clock",
@@ -203,7 +203,7 @@ const plans: Plan[] = [
   {
     id: "monthly",
     name: "Monthly Membership",
-    price: 49,
+    price: 2,
     period: "month",
     description: "Great for regular gym-goers",
     icon: "calendar",
@@ -220,7 +220,7 @@ const plans: Plan[] = [
   {
     id: "quarterly",
     name: "Quarterly Membership",
-    price: 129,
+    price: 3,
     period: "3 months",
     description: "Save more with a 3-month commitment",
     icon: "calendarDays",
@@ -236,7 +236,7 @@ const plans: Plan[] = [
   {
     id: "annual",
     name: "Annual Membership",
-    price: 449,
+    price: 4,
     period: "year",
     description: "Best value for committed members",
     icon: "calendarRange",
