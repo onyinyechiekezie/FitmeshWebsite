@@ -1,0 +1,25 @@
+services:
+  - name: fitmesh-web
+    type: web
+    env: docker
+    autoDeploy: true
+    plan: free
+    healthCheckPath: /
+    dockerfilePath: Dockerfile
+    
+    # Environment variables (set values in Render dashboard)
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: ONEPIPE_BASE_URL
+        sync: false
+      - key: ONEPIPE_API_KEY
+        sync: false
+      - key: ONEPIPE_CLIENT_SECRET
+        sync: false
