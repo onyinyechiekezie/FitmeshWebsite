@@ -225,7 +225,9 @@ export function PricingCard({ plan }: PricingCardProps) {
                 body: JSON.stringify({
                     planId: plan.id,
                     planName: plan.name,
-                    amount: plan.price * 100, // 👈 kobo
+                    //amount: plan.price * 100, // kobo
+                    amount: plan.price,
+                    userId: user.id ,
                 }),
             })
 
@@ -239,7 +241,7 @@ export function PricingCard({ plan }: PricingCardProps) {
             // ✅ Correct message for OnePipe PWA
             setMessage({
                 type: "success",
-                text: "Payment initiated. Check your bank app to approve.",
+                text: "Payment initiated. Kindly follow the instructions sent to you via SMS and Email to complete payment.",
             })
 
         } catch (err: any) {

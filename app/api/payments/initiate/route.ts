@@ -99,11 +99,11 @@ export async function POST(req: Request) {
                 transaction_ref_parent: null,
                 amount: amount * 100, // already in kobo
                 customer: {
-                    customer_ref: "+2349038275442",
+                    customer_ref: "+2347034475242",
                     firstname: "Gym",
                     surname: "Member",
                     email: "member@gym.com",
-                    mobile_no: "09038275442",
+                    mobile_no: "07034475242",
                 },
                 meta: {
                     type: "single_payment",
@@ -157,3 +157,135 @@ export async function POST(req: Request) {
         )
     }
 }
+
+
+
+// import { NextResponse } from "next/server"
+// import { generateSignature } from "@/lib/onepipe/signature"
+// import { OnePipeInvoiceRequest } from "@/lib/onepipe/types"
+// import crypto from "crypto"
+// import pool  from "@/lib/db"
+// import { v4 as uuidv4 } from "uuid"
+//
+//
+//
+// export async function POST(req: Request) {
+//
+//     try {
+//         const body = await req.json()
+//         console.log("PAYMENT INIT BODY:", body)
+//         // const body = await req.json()
+//         const { amount, planName, userId } = body
+//
+//         if (!amount || amount <= 0 || !userId) {
+//             return NextResponse.json(
+//                 { success: false, message: "Invalid request" },
+//                 { status: 400 }
+//             )
+//         }
+//
+//         const requestRef = crypto.randomUUID()
+//         const transactionRef = `GYM-${Date.now()}`
+//
+//         /** ✅ 1. SAVE PAYMENT AS PENDING */
+//         await pool.query(
+//             `
+//       INSERT INTO payments (
+//         id,
+//         user_id,
+//         amount,
+//         status,
+//         type,
+//         reference,
+//         plan_name
+//       )
+//       VALUES ($1,$2,$3,$4,$5,$6,$7)
+//       `,
+//             [
+//                 uuidv4(),
+//                 userId,
+//                 amount, // store in naira, not kobo
+//                 "PENDING",
+//                 "SINGLE",
+//                 transactionRef,
+//                 planName,
+//             ]
+//         )
+//
+//         /**2. BUILD ONEPIPE PAYLOAD (UNCHANGED LOGIC) */
+//         const payload: OnePipeInvoiceRequest = {
+//             request_ref: requestRef,
+//             request_type: "send invoice",
+//             auth: {
+//                 type: null,
+//                 secure: null,
+//                 auth_provider: "PaywithAccount",
+//             },
+//             transaction: {
+//                 mock_mode: "Live",
+//                 transaction_ref: transactionRef,
+//                 transaction_desc: `Gym membership - ${planName}`,
+//                 transaction_ref_parent: null,
+//                 amount: amount * 100, // OnePipe expects kobo
+//                 customer: {
+//                     customer_ref: "2349038275442",
+//                     firstname: "Gym",
+//                     surname: "Member",
+//                     email: "member@gym.com",
+//                     mobile_no: "09038275442",
+//                 },
+//                 meta: {
+//                     type: "single_payment",
+//                     expires_in: 30,
+//                     skip_messaging: false,
+//                     biller_code: process.env.ONEPIPE_BILLER_CODE!,
+//                 },
+//                 details: {},
+//             },
+//         }
+//
+//         const signature = generateSignature(
+//             requestRef,
+//             process.env.ONEPIPE_CLIENT_SECRET!
+//         )
+//
+//         /** ✅ 3. CALL ONEPIPE */
+//         const res = await fetch(
+//             `${process.env.ONEPIPE_BASE_URL}/v2/transact`,
+//             {
+//                 method: "POST",
+//                 headers: {
+//                     "Content-Type": "application/json",
+//                     Authorization: `Bearer ${process.env.ONEPIPE_API_KEY}`,
+//                     Signature: signature,
+//                 },
+//                 body: JSON.stringify(payload),
+//             }
+//         )
+//
+//         const response = await res.json()
+//         console.log("ONEPIPE RAW:", response)
+//
+//         if (!res.ok) {
+//             return NextResponse.json(
+//                 { success: false, message: response?.message || "OnePipe error" },
+//                 { status: 400 }
+//             )
+//         }
+//
+//         return NextResponse.json({
+//             success: true,
+//             transactionRef,
+//             response
+//         })
+//     } catch (err: any) {
+//         console.error("INITIATE PAYMENT ERROR:", err)
+//         return NextResponse.json(
+//             { success: false, message: "Server error" },
+//             { status: 500 }
+//         )
+//     }
+// }
+
+
+
