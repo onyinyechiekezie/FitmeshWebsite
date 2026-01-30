@@ -115,18 +115,37 @@ export async function POST(req: Request) {
             },
         }
 
-        const signature = generateSignature(
-            requestRef,
-            process.env.ONEPIPE_CLIENT_SECRET!
-        )
+        const {
+            ONEPIPE_API_KEY,
+            ONEPIPE_CLIENT_SECRET,
+            ONEPIPE_SECRET_KEY,
+            ONEPIPE_BASE_URL,
+            PWA_API_URL,
+        } = process.env
+
+        const clientSecret = ONEPIPE_CLIENT_SECRET ?? ONEPIPE_SECRET_KEY
+        const endpointUrl = PWA_API_URL ?? (ONEPIPE_BASE_URL ? `${ONEPIPE_BASE_URL}/v2/transact` : undefined)
+
+        if (!ONEPIPE_API_KEY || !clientSecret || !endpointUrl) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message:
+                        "Missing OnePipe configuration. Set ONEPIPE_API_KEY, ONEPIPE_CLIENT_SECRET or ONEPIPE_SECRET_KEY, and PWA_API_URL or ONEPIPE_BASE_URL.",
+                },
+                { status: 500 }
+            )
+        }
+
+        const signature = generateSignature(requestRef, clientSecret)
 
         const res = await fetch(
-            `${process.env.ONEPIPE_BASE_URL}/v2/transact`,
+            endpointUrl,
             {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${process.env.ONEPIPE_API_KEY}`,
+                    Authorization: `Bearer ${ONEPIPE_API_KEY}`,
                     Signature: signature,
                 },
                 body: JSON.stringify(payload),
