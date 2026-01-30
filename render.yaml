@@ -2,6 +2,8 @@ services:
   - name: fitmesh-web
     type: web
     env: docker
+    # Root directory of your app within the repo (use "." for repo root)
+    rootDir: .
     autoDeploy: true
     plan: free
     healthCheckPath: /
