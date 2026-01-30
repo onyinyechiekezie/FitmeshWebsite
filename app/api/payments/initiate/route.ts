@@ -119,11 +119,12 @@ export async function POST(req: Request) {
             ONEPIPE_API_KEY,
             ONEPIPE_CLIENT_SECRET,
             ONEPIPE_SECRET_KEY,
+            ONEPIPE_CLIENT_KEY,
             ONEPIPE_BASE_URL,
             PWA_API_URL,
         } = process.env
 
-        const clientSecret = ONEPIPE_CLIENT_SECRET ?? ONEPIPE_SECRET_KEY
+        const clientSecret = ONEPIPE_CLIENT_SECRET ?? ONEPIPE_SECRET_KEY ?? ONEPIPE_CLIENT_KEY
         const endpointUrl = PWA_API_URL ?? (ONEPIPE_BASE_URL ? `${ONEPIPE_BASE_URL}/v2/transact` : undefined)
 
         if (!ONEPIPE_API_KEY || !clientSecret || !endpointUrl) {
@@ -131,7 +132,7 @@ export async function POST(req: Request) {
                 {
                     success: false,
                     message:
-                        "Missing OnePipe configuration. Set ONEPIPE_API_KEY, ONEPIPE_CLIENT_SECRET or ONEPIPE_SECRET_KEY, and PWA_API_URL or ONEPIPE_BASE_URL.",
+                        "Missing OnePipe configuration. Set ONEPIPE_API_KEY, ONEPIPE_CLIENT_SECRET or ONEPIPE_SECRET_KEY or ONEPIPE_CLIENT_KEY, and PWA_API_URL or ONEPIPE_BASE_URL.",
                 },
                 { status: 500 }
             )
