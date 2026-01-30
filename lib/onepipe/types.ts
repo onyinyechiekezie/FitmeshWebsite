@@ -20,7 +20,7 @@ export interface OnePipeInvoiceRequest {
             mobile_no: string
         }
         meta: {
-            type: "single_payment"
+            type: "single_payment" | "subscription"
             expires_in: number
             skip_messaging: boolean
             biller_code: string

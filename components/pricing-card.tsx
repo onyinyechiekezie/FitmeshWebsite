@@ -203,6 +203,7 @@ export function PricingCard({ plan }: PricingCardProps) {
         type: "success" | "error"
         text: string
     } | null>(null)
+    const [mode, setMode] = useState<"one-time" | "subscription">("one-time")
 
     const { user } = useAuth()
     const router = useRouter()
@@ -248,6 +249,61 @@ export function PricingCard({ plan }: PricingCardProps) {
             setMessage({
                 type: "error",
                 text: err.message || "Unable to initiate payment",
+            })
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    function getPlanFrequency(id: string): "monthly" | "quarterly" | "yearly" | null {
+        if (id === "monthly") return "monthly"
+        if (id === "quarterly") return "quarterly"
+        if (id === "annual") return "yearly"
+        return null
+    }
+
+    async function handleSubscribe() {
+        if (!user) {
+            router.push("/login?redirect=/plans")
+            return
+        }
+
+        const freq = getPlanFrequency(plan.id)
+        if (!freq) {
+            setMessage({ type: "error", text: "Subscription is not available for this plan." })
+            return
+        }
+
+        setLoading(true)
+        setMessage(null)
+
+        try {
+            const res = await fetch("/api/payments/subscription/start", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    planName: plan.name,
+                    amount: plan.price,
+                    frequency: freq,
+                    userId: user.id,
+                }),
+            })
+
+            const data = await res.json()
+
+            if (!res.ok || !data.success) {
+                console.error("Subscription init failed:", data)
+                throw new Error(data.message || "Subscription initiation failed")
+            }
+
+            setMessage({
+                type: "success",
+                text: "Subscription initiated. Follow instructions sent via SMS/Email.",
+            })
+        } catch (err: any) {
+            setMessage({
+                type: "error",
+                text: err.message || "Unable to initiate subscription",
             })
         } finally {
             setLoading(false)
@@ -303,31 +359,84 @@ export function PricingCard({ plan }: PricingCardProps) {
                         </li>
                     ))}
                 </ul>
+                {/* Payment type toggle (visible for monthly/quarterly/annual) */}
+                {getPlanFrequency(plan.id) && (
+                    <div className="mt-6 grid gap-2">
+                        <label className="text-sm text-muted-foreground">Payment type</label>
+                        <div className="flex items-center gap-3">
+                            <button
+                                type="button"
+                                className={cn(
+                                    "rounded-md border px-3 py-1 text-sm",
+                                    mode === "one-time" ? "bg-foreground text-primary-foreground" : ""
+                                )}
+                                onClick={() => setMode("one-time")}
+                            >
+                                One-time
+                            </button>
+                            <button
+                                type="button"
+                                className={cn(
+                                    "rounded-md border px-3 py-1 text-sm",
+                                    mode === "subscription" ? "bg-foreground text-primary-foreground" : ""
+                                )}
+                                onClick={() => setMode("subscription")}
+                            >
+                                Subscription
+                            </button>
+                        </div>
+                    </div>
+                )}
             </CardContent>
 
             <CardFooter className="flex flex-col gap-3 p-6 pt-0">
-                <Button
-                    onClick={handlePayment}
-                    disabled={loading}
-                    className={cn(
-                        "w-full",
-                        plan.popular
-                            ? "bg-foreground text-primary-foreground hover:bg-foreground/90"
-                            : "bg-transparent"
-                    )}
-                    variant={plan.popular ? "default" : "outline"}
-                >
-                    {loading ? (
-                        <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Processing…
-                        </>
-                    ) : user ? (
-                        "Pay Now"
-                    ) : (
-                        "Sign in to Pay"
-                    )}
-                </Button>
+                {mode === "subscription" ? (
+                    <Button
+                        onClick={handleSubscribe}
+                        disabled={loading}
+                        className={cn(
+                            "w-full",
+                            plan.popular
+                                ? "bg-foreground text-primary-foreground hover:bg-foreground/90"
+                                : "bg-transparent"
+                        )}
+                        variant={plan.popular ? "default" : "outline"}
+                    >
+                        {loading ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Processing…
+                            </>
+                        ) : user ? (
+                            "Subscribe"
+                        ) : (
+                            "Sign in to Subscribe"
+                        )}
+                    </Button>
+                ) : (
+                    <Button
+                        onClick={handlePayment}
+                        disabled={loading}
+                        className={cn(
+                            "w-full",
+                            plan.popular
+                                ? "bg-foreground text-primary-foreground hover:bg-foreground/90"
+                                : "bg-transparent"
+                        )}
+                        variant={plan.popular ? "default" : "outline"}
+                    >
+                        {loading ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Processing…
+                            </>
+                        ) : user ? (
+                            "Pay Now"
+                        ) : (
+                            "Sign in to Pay"
+                        )}
+                    </Button>
+                )}
 
                 {message && (
                     <p
